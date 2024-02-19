@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
@@ -13,40 +15,56 @@ import (
 )
 
 const (
-	shareEP    = "https://api.linkedin.com/v2/shares"
-	meEP       = "https://api.linkedin.com/v2/me"
-	userinfoEP = "https://api.linkedin.com/v2/userinfo"
+	allSharesEP = "https://api.linkedin.com/v2/shares"
+	meEP        = "https://api.linkedin.com/v2/me"
+	userInfoEP  = "https://api.linkedin.com/v2/userinfo"
+	redirectEP  = "https://www.linkedin.com/developers/tools/oauth/redirect"
+	shareEP     = "https://api.linkedin.com/v2/ugcPosts"
 )
 
-var (
-	linkedInConfig = &oauth2.Config{
-		ClientID:     os.Getenv("CLIENT_ID"),
-		ClientSecret: os.Getenv("PRIMARY_SECRET"), //PRIMARY_SECRET
-		RedirectURL:  "http://localhost:8080/login",
-		Scopes:       []string{"openid", "profile", "w_member_social", "email"},
-		Endpoint:     linkedin.Endpoint,
-	}
-)
+var linkedInOauthConfig *oauth2.Config
 
 func main() {
+
+	ctx := context.Background()
 	if err := envInit(); err != nil {
 		log.Fatal("Error loading .env")
 		return
 	}
 
-	if err := helloHandler(); err != nil {
-		log.Fatal("Error loading Hello handler")
-		return
+	// accessToken := os.Getenv("ACCESS_TOKEN")
+
+	linkedInOauthConfig = &oauth2.Config{
+		ClientID:     os.Getenv("CLIENT_ID"),
+		ClientSecret: os.Getenv("PRIMARY_SECRET"), //PRIMARY_SECRET
+
+		RedirectURL: redirectEP,
+		Scopes:      []string{"openid", "profile", "w_member_social", "email"},
+		Endpoint:    linkedin.Endpoint,
 	}
-	resp, err := http.Get(meEP)
+
+	fmt.Println(linkedInOauthConfig.ClientID)
+	http.HandleFunc("/", handleInitAuth)
+
+	var code string
+	if _, err := fmt.Scan(&code); err != nil {
+		log.Fatal(err)
+	}
+
+	httpClient := &http.Client{Timeout: 2 * time.Second}
+	ctx = context.WithValue(ctx, oauth2.HTTPClient, httpClient)
+	tok, err := linkedInOauthConfig.Exchange(ctx, code)
 	if err != nil {
-		fmt.Errorf("Error with GET request to /me EP")
+		log.Fatal(err)
 	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	fmt.Println(string(body))
+
+	client := linkedInOauthConfig.Client(ctx, tok)
+	_ = client
+
+	getUser()
 
 	fmt.Println("Server going live")
+
 	if err := startServer(); err != nil {
 		log.Fatal("Error starting server")
 		return
@@ -60,21 +78,34 @@ func envInit() error {
 	return nil
 }
 
-func helloHandler() error {
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Hello, World!")
-		fmt.Println("Server Pinged!")
-	}
-	http.HandleFunc("/", handler)
-	return nil
+func handleInitAuth(w http.ResponseWriter, r *http.Request) {
+	url := linkedInOauthConfig.AuthCodeURL("state", oauth2.AccessTypeOnline)
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
-func pingHandler(w http.ResponseWriter, r *http.Request) error {
-	if err := fmt.Fprint(w, "Hello, World!"); err != nil {
-		log.Fatal("Error starting server")
+// func getAuthCode() {
+// 	var code string
+// 	if _, err := fmt.Scan(&code); err != nil {
+// 		log.Fatal(err)
+// 	}
+// }
+
+func getUser() {
+	resp, err := http.Get(meEP)
+	if err != nil {
+		userErr := fmt.Errorf("error with response from getUser EP: %w", err)
+		fmt.Println(userErr)
 	}
-	fmt.Println("Server Pinged!")
-	return nil
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+
+	fmt.Println(string(body))
+	if err != nil {
+		rBodyErr := fmt.Errorf("error with response body of GET /me EP: %w", err)
+		fmt.Println(rBodyErr)
+	}
+
 }
 
 func startServer() error {
@@ -85,7 +116,7 @@ func startServer() error {
 	err := server.ListenAndServe()
 	if err != nil {
 		fmt.Println("Server dead")
-		log.Fatal("Error with ListenAndServe")
+		log.Fatal("Error with ListenAndServe", err)
 	}
 	return nil
 }
