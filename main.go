@@ -16,18 +16,31 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-const (
-	allSharesEP = "https://api.linkedin.com/v2/shares"
-	meEP        = "https://api.linkedin.com/v2/me"
-	redirectEP  = "http://localhost:8080/redirect"
-	shareEP     = "https://api.linkedin.com/v2/ugcPosts"
-)
+type linkedInEndpoints struct {
+	AllShares string
+	Share     string
+	Me        string
+	Redirect  string
+}
 
-const (
-	newShareEP = "/newShare"
-	newQueryEP = "/newQuery"
-	userInfoEP = "/userInfo"
-)
+type serverEndpoints struct {
+	NewShare string
+	NewQuery string
+	UserInfo string
+}
+
+var APIEndpoints = linkedInEndpoints{
+	AllShares: "https://api.linkedin.com/v2/shares",
+	Share:     "https://api.linkedin.com/v2/ugcPosts",
+	Me:        "https://api.linkedin.com/v2/me",
+	Redirect:  "http://localhost:8080/redirect",
+}
+
+var ServerEndpoints = serverEndpoints{
+	NewShare: "/newShare",
+	NewQuery: "/newQuery",
+	UserInfo: "/userInfo",
+}
 
 func main() {
 
@@ -44,7 +57,7 @@ func main() {
 	linkedInOauthConfig := &oauth2.Config{
 		ClientID:     cID,
 		ClientSecret: cSecret, //PRIMARY_SECRET
-		RedirectURL:  redirectEP,
+		RedirectURL:  APIEndpoints.Redirect,
 		Scopes:       []string{"openid", "profile", "w_member_social", "email"},
 		Endpoint:     linkedin.Endpoint,
 	}
