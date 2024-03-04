@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,33 +19,38 @@ type linkedInEndpoints struct {
 	AllShares string
 	Share     string
 	Me        string
-	Redirect  string
 }
 
 type serverEndpoints struct {
 	NewShare string
 	NewQuery string
 	UserInfo string
+	Redirect string
 }
 
 var APIEndpoints = linkedInEndpoints{
 	AllShares: "https://api.linkedin.com/v2/shares",
 	Share:     "https://api.linkedin.com/v2/ugcPosts",
 	Me:        "https://api.linkedin.com/v2/me",
-	Redirect:  "http://localhost:8080/redirect",
 }
 
 var ServerEndpoints = serverEndpoints{
 	NewShare: "/newShare",
 	NewQuery: "/newQuery",
 	UserInfo: "/userInfo",
+	Redirect: "http://localhost:8080/redirect",
 }
 
 func main() {
 
 	ctx := context.Background()
 	if err := envInit(); err != nil {
-		log.Fatal("Error loading .env")
+		log.Fatal("Error loading .env", err)
+		return
+	}
+
+	if err := handlersInit(); err != nil {
+		log.Fatal("Error initializating Server Handlers", err)
 		return
 	}
 
@@ -57,7 +61,7 @@ func main() {
 	linkedInOauthConfig := &oauth2.Config{
 		ClientID:     cID,
 		ClientSecret: cSecret, //PRIMARY_SECRET
-		RedirectURL:  APIEndpoints.Redirect,
+		RedirectURL:  ServerEndpoints.Redirect,
 		Scopes:       []string{"openid", "profile", "w_member_social", "email"},
 		Endpoint:     linkedin.Endpoint,
 	}
@@ -77,7 +81,6 @@ func main() {
 		fmt.Printf("Token: %s: ", tok)
 		log.Fatalf("Error exchanging authorization code for access token: %v", err)
 	}
-	fmt.Printf("\nToken: %s: ", tok)
 	fmt.Println(json.MarshalIndent(tok, "", "    "))
 
 	client := linkedInOauthConfig.Client(ctx, tok)
@@ -99,27 +102,31 @@ func envInit() error {
 }
 
 func handlersInit() error {
+	newShareHandler := func(w http.ResponseWriter, r *http.Request) {
+
+	}
+	http.HandleFunc(ServerEndpoints.NewShare, newShareHandler)
 
 	return nil
 }
 
-func getUserHandler() {
-	resp, err := http.Get(meEP)
-	if err != nil {
-		userErr := fmt.Errorf("error with response from getUser EP: %w", err)
-		fmt.Println(userErr)
-	}
+// func getUserHandler() {
+// 	resp, err := http.Get(APIEndpoints.Me)
+// 	if err != nil {
+// 		userErr := fmt.Errorf("error with response from getUser EP: %w", err)
+// 		fmt.Println(userErr)
+// 	}
 
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
+// 	defer resp.Body.Close()
+// 	body, err := io.ReadAll(resp.Body)
 
-	fmt.Println(string(body))
-	if err != nil {
-		rBodyErr := fmt.Errorf("error with response body of GET /me EP: %w", err)
-		fmt.Println(rBodyErr)
-	}
+// 	fmt.Println(string(body))
+// 	if err != nil {
+// 		rBodyErr := fmt.Errorf("error with response body of GET /me EP: %w", err)
+// 		fmt.Println(rBodyErr)
+// 	}
 
-}
+// }
 
 func startServer() error {
 	server := http.Server{
