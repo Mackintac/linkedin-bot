@@ -19,9 +19,14 @@ import (
 const (
 	allSharesEP = "https://api.linkedin.com/v2/shares"
 	meEP        = "https://api.linkedin.com/v2/me"
-	userInfoEP  = "https://api.linkedin.com/v2/userinfo"
 	redirectEP  = "http://localhost:8080/redirect"
 	shareEP     = "https://api.linkedin.com/v2/ugcPosts"
+)
+
+const (
+	newShareEP = "/newShare"
+	newQueryEP = "/newQuery"
+	userInfoEP = "/userInfo"
 )
 
 func main() {
@@ -45,25 +50,16 @@ func main() {
 	}
 
 	// verifier := oauth2.GenerateVerifier()
-	fmt.Println("0")
 	url := linkedInOauthConfig.AuthCodeURL("ducksss", oauth2.AccessTypeOffline)
 	fmt.Printf("Visit the URL for the auth dialog: %v", url)
-
-	fmt.Println("1")
-	fmt.Println("2")
-
-	fmt.Println("3")
-
-	fmt.Println("4")
 
 	var code string
 	if _, err := fmt.Scan(&code); err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("4")
-	fmt.Printf("Code: %s, Verifier: %s\n", code)
 	tok, err := linkedInOauthConfig.Exchange(ctx, code)
+
 	if err != nil {
 		fmt.Printf("Token: %s: ", tok)
 		log.Fatalf("Error exchanging authorization code for access token: %v", err)
@@ -71,7 +67,6 @@ func main() {
 	fmt.Printf("\nToken: %s: ", tok)
 	fmt.Println(json.MarshalIndent(tok, "", "    "))
 
-	fmt.Println("6")
 	client := linkedInOauthConfig.Client(ctx, tok)
 	client.Get("...")
 
@@ -82,7 +77,6 @@ func main() {
 		return
 	}
 
-	go getUserHandler()
 }
 
 func envInit() error {
@@ -91,17 +85,10 @@ func envInit() error {
 	return nil
 }
 
-// func handleInitAuth(w http.ResponseWriter, r *http.Request) {
-// 	url := linkedInOauthConfig.AuthCodeURL("state", oauth2.AccessTypeOnline)
-// 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-// }
+func handlersInit() error {
 
-// func getAuthCode() {
-// 	var code string
-// 	if _, err := fmt.Scan(&code); err != nil {
-// 		log.Fatal(err)
-// 	}
-// }
+	return nil
+}
 
 func getUserHandler() {
 	resp, err := http.Get(meEP)
