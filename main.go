@@ -2,27 +2,27 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/linkedin"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 const (
 	allSharesEP = "https://api.linkedin.com/v2/shares"
 	meEP        = "https://api.linkedin.com/v2/me"
 	userInfoEP  = "https://api.linkedin.com/v2/userinfo"
-	redirectEP  = "https://www.linkedin.com/developers/tools/oauth/redirect"
+	redirectEP  = "http://localhost:8080/redirect"
 	shareEP     = "https://api.linkedin.com/v2/ugcPosts"
 )
-
-var linkedInOauthConfig *oauth2.Config
 
 func main() {
 
@@ -33,35 +33,47 @@ func main() {
 	}
 
 	// accessToken := os.Getenv("ACCESS_TOKEN")
+	cID := os.Getenv("CLIENT_ID")
+	cSecret := os.Getenv("PRIMARY_SECRET")
 
-	linkedInOauthConfig = &oauth2.Config{
-		ClientID:     os.Getenv("CLIENT_ID"),
-		ClientSecret: os.Getenv("PRIMARY_SECRET"), //PRIMARY_SECRET
-
-		RedirectURL: redirectEP,
-		Scopes:      []string{"openid", "profile", "w_member_social", "email"},
-		Endpoint:    linkedin.Endpoint,
+	linkedInOauthConfig := &oauth2.Config{
+		ClientID:     cID,
+		ClientSecret: cSecret, //PRIMARY_SECRET
+		RedirectURL:  redirectEP,
+		Scopes:       []string{"openid", "profile", "w_member_social", "email"},
+		Endpoint:     linkedin.Endpoint,
 	}
 
-	fmt.Println(linkedInOauthConfig.ClientID)
-	http.HandleFunc("/", handleInitAuth)
+	// verifier := oauth2.GenerateVerifier()
+	fmt.Println("0")
+	url := linkedInOauthConfig.AuthCodeURL("ducksss", oauth2.AccessTypeOffline)
+	fmt.Printf("Visit the URL for the auth dialog: %v", url)
+
+	fmt.Println("1")
+	fmt.Println("2")
+
+	fmt.Println("3")
+
+	fmt.Println("4")
 
 	var code string
 	if _, err := fmt.Scan(&code); err != nil {
 		log.Fatal(err)
 	}
 
-	httpClient := &http.Client{Timeout: 2 * time.Second}
-	ctx = context.WithValue(ctx, oauth2.HTTPClient, httpClient)
+	fmt.Println("4")
+	fmt.Printf("Code: %s, Verifier: %s\n", code)
 	tok, err := linkedInOauthConfig.Exchange(ctx, code)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Token: %s: ", tok)
+		log.Fatalf("Error exchanging authorization code for access token: %v", err)
 	}
+	fmt.Printf("\nToken: %s: ", tok)
+	fmt.Println(json.MarshalIndent(tok, "", "    "))
 
+	fmt.Println("6")
 	client := linkedInOauthConfig.Client(ctx, tok)
-	_ = client
-
-	getUser()
+	client.Get("...")
 
 	fmt.Println("Server going live")
 
@@ -70,6 +82,7 @@ func main() {
 		return
 	}
 
+	go getUserHandler()
 }
 
 func envInit() error {
@@ -78,10 +91,10 @@ func envInit() error {
 	return nil
 }
 
-func handleInitAuth(w http.ResponseWriter, r *http.Request) {
-	url := linkedInOauthConfig.AuthCodeURL("state", oauth2.AccessTypeOnline)
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-}
+// func handleInitAuth(w http.ResponseWriter, r *http.Request) {
+// 	url := linkedInOauthConfig.AuthCodeURL("state", oauth2.AccessTypeOnline)
+// 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+// }
 
 // func getAuthCode() {
 // 	var code string
@@ -90,7 +103,7 @@ func handleInitAuth(w http.ResponseWriter, r *http.Request) {
 // 	}
 // }
 
-func getUser() {
+func getUserHandler() {
 	resp, err := http.Get(meEP)
 	if err != nil {
 		userErr := fmt.Errorf("error with response from getUser EP: %w", err)
