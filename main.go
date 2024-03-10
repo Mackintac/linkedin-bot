@@ -28,6 +28,12 @@ type serverEndpoints struct {
 	Redirect string
 }
 
+type dotEnvVars struct {
+	ClientId     string
+	ClientSecret string
+	AccessToken  string
+}
+
 var APIEndpoints = linkedInEndpoints{
 	AllShares: "https://api.linkedin.com/v2/shares",
 	Share:     "https://api.linkedin.com/v2/ugcPosts",
@@ -39,6 +45,12 @@ var ServerEndpoints = serverEndpoints{
 	NewQuery: "/newQuery",
 	UserInfo: "/userInfo",
 	Redirect: "http://localhost:8080/redirect",
+}
+
+var DotEnvVars = dotEnvVars{
+	ClientId:     os.Getenv("CLIENT_ID"),
+	ClientSecret: os.Getenv("PRIMARY_SECRET"),
+	AccessToken:  os.Getenv("ACCESS_TOKEN"),
 }
 
 func main() {
@@ -55,12 +67,10 @@ func main() {
 	}
 
 	// accessToken := os.Getenv("ACCESS_TOKEN")
-	cID := os.Getenv("CLIENT_ID")
-	cSecret := os.Getenv("PRIMARY_SECRET")
 
 	linkedInOauthConfig := &oauth2.Config{
-		ClientID:     cID,
-		ClientSecret: cSecret, //PRIMARY_SECRET
+		ClientID:     DotEnvVars.ClientId,
+		ClientSecret: DotEnvVars.ClientSecret, //PRIMARY_SECRET
 		RedirectURL:  ServerEndpoints.Redirect,
 		Scopes:       []string{"openid", "profile", "w_member_social", "email"},
 		Endpoint:     linkedin.Endpoint,
@@ -76,11 +86,11 @@ func main() {
 	}
 
 	tok, err := linkedInOauthConfig.Exchange(ctx, code)
-
 	if err != nil {
 		fmt.Printf("Token: %s: ", tok)
 		log.Fatalf("Error exchanging authorization code for access token: %v", err)
 	}
+
 	fmt.Println(json.MarshalIndent(tok, "", "    "))
 
 	client := linkedInOauthConfig.Client(ctx, tok)
@@ -102,11 +112,34 @@ func envInit() error {
 }
 
 func handlersInit() error {
+
 	newShareHandler := func(w http.ResponseWriter, r *http.Request) {
+
+		shareReqBody := map[string]interface{}{
+			"author":         "urn:li:person:4924372b1",
+			"lifecycleState": "PUBLISHED",
+			"specificContent": map[string]interface{}{
+				"com.linkedin.ugc.ShareContent": map[string]interface{}{
+					"shareCommentary": map[string]interface{}{
+						"text": "Spending this Thursday learning more about backend systems using GoLang!",
+					},
+					"shareMediaCategory": "NONE",
+				},
+			},
+			"visibility": map[string]interface{}{
+				"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC",
+			},
+		}
+		jsonShareReqBody, err := json.Marshal(shareReqBody)
+		if err != nil {
+			fmt.Println("Error Marshalling JSON:", err)
+			return
+		}
+
+		r.Header.Set("Content-Type", "application/json")
 
 	}
 	http.HandleFunc(ServerEndpoints.NewShare, newShareHandler)
-
 	return nil
 }
 
