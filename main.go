@@ -19,7 +19,7 @@ import (
 type linkedInEndpoints struct {
 	AllShares string
 	Share     string
-	Me        string
+	UserInfo  string
 }
 
 type serverEndpoints struct {
@@ -38,7 +38,7 @@ type dotEnvVars struct {
 var APIEndpoints = linkedInEndpoints{
 	AllShares: "https://api.linkedin.com/v2/shares",
 	Share:     "https://api.linkedin.com/v2/ugcPosts",
-	Me:        "https://api.linkedin.com/v2/me",
+	UserInfo:  "https://api.linkedin.com/v2/userinfo",
 }
 
 var ServerEndpoints = serverEndpoints{
@@ -58,7 +58,7 @@ var linkedInOauthConfig = &oauth2.Config{
 	ClientID:     DotEnvVars.ClientId,
 	ClientSecret: DotEnvVars.ClientSecret, //PRIMARY_SECRET
 	RedirectURL:  ServerEndpoints.Redirect,
-	Scopes:       []string{"openid", "profile", "w_member_social", "email"},
+	Scopes:       []string{"email", "openid", "profile", "w_member_social"},
 	Endpoint:     linkedin.Endpoint,
 }
 
@@ -97,14 +97,13 @@ func envInit() error {
 
 func handlersInit() error {
 
+	// LINKEDIN API newShare handler
 	newShareHandler := func(w http.ResponseWriter, r *http.Request) {
 
 		token := &oauth2.Token{AccessToken: DotEnvVars.AccessToken}
-
 		httpClient := linkedInOauthConfig.Client(ctx, token)
-
 		shareReqBody := map[string]interface{}{
-			"author":         "urn:li:person:4924372b1",
+			"author":         "urn:li:person:",
 			"lifecycleState": "PUBLISHED",
 			"specificContent": map[string]interface{}{
 				"com.linkedin.ugc.ShareContent": map[string]interface{}{
@@ -118,6 +117,7 @@ func handlersInit() error {
 				"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC",
 			},
 		}
+
 		jsonShareReqBody, err := json.Marshal(shareReqBody)
 		if err != nil {
 			log.Fatal("Error Marshalling JSON:", err)
@@ -129,31 +129,57 @@ func handlersInit() error {
 			log.Fatal("Error Creating Request:", err)
 			return
 		}
+
+		fmt.Printf("req: %+v\n", req)
+		req.Header.Set("Authorization", "Bearer"+token.AccessToken)
+		req.Header.Set("X-Restli-Protocol-Version", "2.0.0")
 		req.Header.Set("Content-Type", "application/json")
 
-		// fmt.Printf("req: %+v\n", req)
-		// fmt.Printf("ctx: %+v\n", ctx)
-		// fmt.Printf("client: %+v\n", httpClient)
-		// fmt.Printf("token: %+v\n", token)
+		// log.Printf("req: %+v\n", req)
 		// fmt.Printf("body: %s\n", jsonShareReqBody)
+		// fmt.Printf("-------------BODY------------ %s \n", bytes.NewBuffer(jsonShareReqBody))
 
 		resp, err := httpClient.Do(req)
 		if err != nil {
 			log.Fatal("Error sending request:", err)
 			return
 		}
-		var responseBody map[string]interface{}
 
-		// Decode JSON response body
+		var responseBody map[string]interface{}
 		if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
 			log.Fatal("Error decoding response body:", err)
 			return
 		}
 
-		// Print response body for inspection
+		if errorMessage, ok := responseBody["errorMessage"].(string); ok {
+			fmt.Println("Error Message:", errorMessage)
+		}
+
+		defer resp.Body.Close()
+
+	}
+
+	// LINKEDIN API PROFILE HANDLER FOR THE /ME EP
+	getInfoHandler := func(w http.ResponseWriter, r *http.Request) {
+
+		token := &oauth2.Token{AccessToken: DotEnvVars.AccessToken}
+		httpClient := linkedInOauthConfig.Client(ctx, token)
+
+		resp, err := httpClient.Get(APIEndpoints.UserInfo)
+		if err != nil {
+
+			log.Fatal("Error with Get Request:", err)
+			return
+		}
+		var responseBody map[string]interface{}
+
+		if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
+			log.Fatal("Error decoding response body:", err)
+			return
+		}
+
 		fmt.Println("Response Body:", responseBody)
 
-		// Extract error details if available
 		if errorMessage, ok := responseBody["errorMessage"].(string); ok {
 			fmt.Println("Error Message:", errorMessage)
 		}
@@ -164,71 +190,12 @@ func handlersInit() error {
 
 	}
 
-	newerShareHandler := func(w http.ResponseWriter, r *http.Request) {
-		accessToken := DotEnvVars.AccessToken
-
-		// Use the access token to create an OAuth 2.0 token
-		token := &oauth2.Token{AccessToken: accessToken}
-
-		// Create an OAuth 2.0 HTTP client
-		httpClient := linkedInOauthConfig.Client(context.Background(), token)
-
-		// Use the HTTP client to make authenticated API requests
-		url := "https://api.linkedin.com/v2/ugcPosts"
-		postData := []byte(`{
-		"author": "urn:li:person:4924372b1",
-		"lifecycleState": "PUBLISHED",
-		"specificContent": {
-			"com.linkedin.ugc.ShareContent": {
-				"shareCommentary": {
-					"text": "Your share text here"
-				}
-			}
-		},
-		"visibility": {
-			"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
-		}
-	}`)
-
-		// Send POST request to LinkedIn API
-		resp, err := httpClient.Post(url, "application/json", bytes.NewBuffer(postData))
-		if err != nil {
-			// Handle error by returning HTTP 500 Internal Server Error
-			http.Error(w, "Failed to send request to LinkedIn API", http.StatusInternalServerError)
-			log.Printf("Error sending request to LinkedIn API: %v", err)
-			return
-		}
-		defer resp.Body.Close()
-
-		// Check if the response status code is not successful (not 2xx)
-		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			// Handle error by returning HTTP status code received from LinkedIn API
-			http.Error(w, fmt.Sprintf("LinkedIn API returned status code %d", resp.StatusCode), resp.StatusCode)
-			log.Printf("LinkedIn API returned non-successful status code: %d", resp.StatusCode)
-			return
-		}
-
-		// Decode response body
-		var responseBody map[string]interface{}
-		if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
-			// Handle error by returning HTTP 500 Internal Server Error
-			http.Error(w, "Failed to decode response from LinkedIn API", http.StatusInternalServerError)
-			log.Printf("Error decoding response body from LinkedIn API: %v", err)
-			return
-		}
-
-		// Print response body for inspection
-		fmt.Println("Response Body:", responseBody)
-
-		// Write response to client
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(responseBody)
-	}
 	http.HandleFunc(ServerEndpoints.NewShare, newShareHandler)
-	http.HandleFunc(ServerEndpoints.UserInfo, newerShareHandler)
+	http.HandleFunc(ServerEndpoints.UserInfo, getInfoHandler)
 	return nil
 }
 
+// STARTS THE SERVER
 func startServer() error {
 	server := http.Server{
 		Addr: "127.0.0.1:8080",
