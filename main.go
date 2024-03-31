@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"dev/linkedIn/components/handlers"
-	"dev/linkedIn/projectUtil"
 	projectUtil "dev/linkedIn/util"
 	"encoding/json"
 	"fmt"
@@ -69,7 +68,7 @@ var ctx = context.Background()
 
 func main() {
 	handlers.NewShareHandler()
-	projectUtil.InitProjectConfig()
+	projectConfig := projectUtil.InitProjectConfig()
 	fmt.Println(projectConfig.Endpoints.LinkedIn.AllShares)
 	if err := envInit(); err != nil {
 		log.Fatal("Error loading .env", err)
