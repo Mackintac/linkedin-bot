@@ -66,7 +66,7 @@ var ctx = context.Background()
 
 func main() {
 
-	InitProjectConfig()
+	config := InitProjectConfig()
 
 	if err := envInit(); err != nil {
 		log.Fatal("Error loading .env", err)

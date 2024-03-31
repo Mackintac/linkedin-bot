@@ -1,8 +1,8 @@
-package main
+package util
 
 import "os"
 
-type TprojectConfig struct {
+type TProjectConfig struct {
 	Endpoints struct {
 		LinkedIn struct {
 			AllShares string
@@ -23,10 +23,10 @@ type TprojectConfig struct {
 	}
 }
 
-var projectConfig TprojectConfig
+var projectConfig TProjectConfig
 
-func InitProjectConfig() {
-	projectConfig = TprojectConfig{
+func InitProjectConfig() TProjectConfig {
+	projectConfig = TProjectConfig{
 		Endpoints: struct {
 			LinkedIn struct {
 				AllShares string
@@ -71,4 +71,6 @@ func InitProjectConfig() {
 			os.Getenv("ACCESS_TOKEN"),
 		},
 	}
+
+	return projectConfig
 }
