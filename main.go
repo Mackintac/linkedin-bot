@@ -3,6 +3,9 @@ package main
 import (
 	"bytes"
 	"context"
+	"dev/linkedIn/components/handlers"
+	"dev/linkedIn/projectUtil"
+	projectUtil "dev/linkedIn/util"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -65,9 +68,9 @@ var linkedInOauthConfig = &oauth2.Config{
 var ctx = context.Background()
 
 func main() {
-
-	config := InitProjectConfig()
-
+	handlers.NewShareHandler()
+	projectUtil.InitProjectConfig()
+	fmt.Println(projectConfig.Endpoints.LinkedIn.AllShares)
 	if err := envInit(); err != nil {
 		log.Fatal("Error loading .env", err)
 		return

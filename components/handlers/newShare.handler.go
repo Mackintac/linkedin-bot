@@ -1,6 +1,6 @@
-package main
+package handlers
 
-func newShareHandler() error {
+func NewShareHandler() error {
 
 	return nil
 }
