@@ -1,6 +1,10 @@
 package projectUtil
 
-import "os"
+import (
+	"context"
+	"fmt"
+	"os"
+)
 
 type TProjectConfig struct {
 	Endpoints struct {
@@ -21,12 +25,16 @@ type TProjectConfig struct {
 		ClientSecret string
 		AccessToken  string
 	}
+
+	GlobalVars struct {
+		ctx context.Context
+	}
 }
 
-var projectConfig TProjectConfig
+// var projectConfig TProjectConfig
 
 func InitProjectConfig() TProjectConfig {
-	projectConfig = TProjectConfig{
+	projectConfig := TProjectConfig{
 		Endpoints: struct {
 			LinkedIn struct {
 				AllShares string
@@ -70,7 +78,10 @@ func InitProjectConfig() TProjectConfig {
 			os.Getenv("PRIMARY_SECRET"),
 			os.Getenv("ACCESS_TOKEN"),
 		},
+		GlobalVars: struct{ ctx context.Context }{
+			context.Background(),
+		},
 	}
-
+	fmt.Println(projectConfig)
 	return projectConfig
 }
