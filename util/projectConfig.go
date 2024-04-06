@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/linkedin"
 )
 
 type TProjectConfig struct {
@@ -27,11 +30,18 @@ type TProjectConfig struct {
 	}
 
 	GlobalVars struct {
-		ctx context.Context
+		Ctx context.Context
+	}
+	LinkedInAuthCfg struct {
+		ClientID     string
+		ClientSecret string
+		RedirectURL  string
+		Scopes       []string
+		Endpoint     oauth2.Endpoint
 	}
 }
 
-// var projectConfig TProjectConfig
+var projectConfig TProjectConfig
 
 func InitProjectConfig() TProjectConfig {
 	projectConfig := TProjectConfig{
@@ -78,8 +88,21 @@ func InitProjectConfig() TProjectConfig {
 			os.Getenv("PRIMARY_SECRET"),
 			os.Getenv("ACCESS_TOKEN"),
 		},
-		GlobalVars: struct{ ctx context.Context }{
+		GlobalVars: struct{ Ctx context.Context }{
 			context.Background(),
+		},
+		LinkedInAuthCfg: struct {
+			ClientID     string
+			ClientSecret string
+			RedirectURL  string
+			Scopes       []string
+			Endpoint     oauth2.Endpoint
+		}{
+			os.Getenv("CLIENT_ID"),
+			os.Getenv("PRIMARY_SECRET"),
+			"http://localhost:8080/redirect",
+			[]string{"email", "openid", "profile", "w_member_social"},
+			linkedin.Endpoint,
 		},
 	}
 	fmt.Println(projectConfig)

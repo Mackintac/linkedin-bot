@@ -11,12 +11,21 @@ import (
 	"golang.org/x/oauth2"
 )
 
+var projectConfig projectUtil.TProjectConfig = projectUtil.InitProjectConfig()
+var linkedInOauthConfig = &oauth2.Config{
+	ClientID:     projectConfig.LinkedInAuthCfg.ClientID,
+	ClientSecret: projectConfig.LinkedInAuthCfg.ClientSecret,
+	RedirectURL:  projectConfig.LinkedInAuthCfg.RedirectURL,
+	Scopes:       projectConfig.LinkedInAuthCfg.Scopes,
+	Endpoint:     projectConfig.LinkedInAuthCfg.Endpoint,
+}
+
 func NewShareHandler() func(w http.ResponseWriter, r *http.Request) {
 
 	newShareHandler := func(w http.ResponseWriter, r *http.Request) {
 
-		token := &oauth2.Token{AccessToken: projectUtil.InitProjectConfig().DotEnvVars.AccessToken}
-		httpClient := linkedInOauthConfig.Client( , token)
+		token := &oauth2.Token{AccessToken: projectConfig.DotEnvVars.AccessToken}
+		httpClient := linkedInOauthConfig.Client(projectConfig.GlobalVars.Ctx, token)
 		shareReqBody := map[string]interface{}{
 			"author":         "urn:li:person:",
 			"lifecycleState": "PUBLISHED",
@@ -39,7 +48,7 @@ func NewShareHandler() func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		req, err := http.NewRequest("POST", APIEndpoints.Share, bytes.NewBuffer(jsonShareReqBody))
+		req, err := http.NewRequest("POST", projectConfig.Endpoints.LinkedIn.Share, bytes.NewBuffer(jsonShareReqBody))
 		if err != nil {
 			log.Fatal("Error Creating Request:", err)
 			return
