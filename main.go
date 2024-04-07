@@ -8,12 +8,9 @@ import (
 )
 
 func main() {
-
 	handlers.InitHandlers()
-
 	if err := Server(); err != nil {
 		log.Fatal("Error starting server")
 		return
 	}
-
 }
