@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/linkedin"
 )
@@ -27,6 +28,7 @@ type TProjectConfig struct {
 		ClientId     string
 		ClientSecret string
 		AccessToken  string
+		UserURN      string
 	}
 
 	GlobalVars struct {
@@ -41,9 +43,11 @@ type TProjectConfig struct {
 	}
 }
 
-var projectConfig TProjectConfig
+// var projectConfig TProjectConfig
 
 func InitProjectConfig() TProjectConfig {
+
+	godotenv.Load(".env")
 	projectConfig := TProjectConfig{
 		Endpoints: struct {
 			LinkedIn struct {
@@ -65,7 +69,7 @@ func InitProjectConfig() TProjectConfig {
 			}{
 				"https://api.linkedin.com/v2/shares",
 				"https://api.linkedin.com/v2/ugcPosts",
-				"https://api.linkedin.com/v2/me",
+				"https://api.linkedin.com/v2/userinfo",
 			},
 			Server: struct {
 				NewShare string
@@ -83,10 +87,12 @@ func InitProjectConfig() TProjectConfig {
 			ClientId     string
 			ClientSecret string
 			AccessToken  string
+			UserURN      string
 		}{
 			os.Getenv("CLIENT_ID"),
 			os.Getenv("PRIMARY_SECRET"),
 			os.Getenv("ACCESS_TOKEN"),
+			os.Getenv("USER_URN"),
 		},
 		GlobalVars: struct{ Ctx context.Context }{
 			context.Background(),

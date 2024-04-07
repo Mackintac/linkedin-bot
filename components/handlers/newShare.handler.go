@@ -27,7 +27,7 @@ func NewShareHandler() func(w http.ResponseWriter, r *http.Request) {
 		token := &oauth2.Token{AccessToken: projectConfig.DotEnvVars.AccessToken}
 		httpClient := linkedInOauthConfig.Client(projectConfig.GlobalVars.Ctx, token)
 		shareReqBody := map[string]interface{}{
-			"author":         "urn:li:person:",
+			"author":         "urn:li:person:" + projectConfig.DotEnvVars.UserURN,
 			"lifecycleState": "PUBLISHED",
 			"specificContent": map[string]interface{}{
 				"com.linkedin.ugc.ShareContent": map[string]interface{}{
