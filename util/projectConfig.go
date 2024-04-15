@@ -29,6 +29,7 @@ type TProjectConfig struct {
 		ClientSecret string
 		AccessToken  string
 		UserURN      string
+		GPTSecret    string
 	}
 
 	GlobalVars struct {
@@ -40,6 +41,20 @@ type TProjectConfig struct {
 		RedirectURL  string
 		Scopes       []string
 		Endpoint     oauth2.Endpoint
+	}
+	ChatGPTQueries struct {
+		StyleOf struct {
+			Manager         string
+			Developer       [10]string
+			SoftwareManager string
+		}
+		PostType struct {
+			Guide    string
+			Anecdote string
+			Comment  string
+		}
+		Technologies [10]string
+		GeneralTopic [3]string
 	}
 }
 
@@ -88,11 +103,13 @@ func InitProjectConfig() TProjectConfig {
 			ClientSecret string
 			AccessToken  string
 			UserURN      string
+			GPTSecret    string
 		}{
 			os.Getenv("CLIENT_ID"),
 			os.Getenv("PRIMARY_SECRET"),
 			os.Getenv("ACCESS_TOKEN"),
 			os.Getenv("USER_URN"),
+			os.Getenv("GPT_SECRET"),
 		},
 		GlobalVars: struct{ Ctx context.Context }{
 			context.Background(),
@@ -109,6 +126,59 @@ func InitProjectConfig() TProjectConfig {
 			"http://localhost:8080/redirect",
 			[]string{"email", "openid", "profile", "w_member_social"},
 			linkedin.Endpoint,
+		},
+		ChatGPTQueries: struct {
+			StyleOf struct {
+				Manager         string
+				Developer       [10]string
+				SoftwareManager string
+			}
+			PostType struct {
+				Guide    string
+				Anecdote string
+				Comment  string
+			}
+			Technologies [10]string
+			GeneralTopic [3]string
+		}{
+			StyleOf: struct {
+				Manager         string
+				Developer       [10]string
+				SoftwareManager string
+			}{"Manager", [10]string{
+				"Frontend Developer",
+				"Backend Engineer",
+				"Full-stack Developer",
+				"UI Developer",
+				"API Developer",
+				"JavaScript Engineer",
+				"Database Developer",
+				"DevOps Engineer",
+				"Web Developer",
+				"Software Engineer",
+			}, "Software Engineering Manager"},
+			PostType: struct {
+				Guide    string
+				Anecdote string
+				Comment  string
+			}{"write a guide for:", "in the style of a personal anecdote or experience, about:", "in a pensive manner, comment on:"},
+			Technologies: [10]string{
+				"JavaScript",
+				"Python",
+				"Java",
+				"C#",
+				"C++",
+				"Ruby",
+				"PHP",
+				"Swift",
+				"Go (Golang)",
+				"TypeScript",
+			},
+			GeneralTopic: [3]string{
+				"Team Management",
+				"Learning Programming",
+				"Productivity in the office/remote workplace",
+			},
 		},
 	}
 	fmt.Println(projectConfig)
