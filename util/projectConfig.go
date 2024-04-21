@@ -182,5 +182,6 @@ func InitProjectConfig() TProjectConfig {
 		},
 	}
 	fmt.Println(projectConfig)
+	fmt.Println(projectConfig.DotEnvVars.GPTSecret)
 	return projectConfig
 }

@@ -9,12 +9,16 @@ import (
 	"net/http"
 )
 
-func NewQueryHandler() func(w http.ResponseWriter, r *http.Request) {
+func NewQueryHandler(customQuery string) func(w http.ResponseWriter, r *http.Request) {
+
 	newQueryHandler := func(w http.ResponseWriter, r *http.Request) {
+
+		httpClient := &http.Client{}
+
 		queryReqBody := map[string]interface{}{
 			"model": "gpt-3.5-turbo",
-			"messages": map[string]interface{}{
-				"role": "user", "content": "Say this is a test!"},
+			"messages": []map[string]string{
+				{"role": "user", "content": customQuery}},
 			"temperature": 0.7,
 		}
 
@@ -23,16 +27,17 @@ func NewQueryHandler() func(w http.ResponseWriter, r *http.Request) {
 			log.Fatal("Error Marshalling JSON:", err)
 			return
 		}
+
 		req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(jsonQueryReqBody))
 		if err != nil {
 			log.Fatal("Error creating request with GPT query:", err)
 			return
 		}
-
-		req.Header.Set("Authorization", "Bearer"+projectConfig.DotEnvVars.GPTSecret)
+		req.Header.Set("Authorization", "Bearer "+projectConfig.DotEnvVars.GPTSecret)
 		req.Header.Set("Content-Type", "application/json")
+		fmt.Printf("req: %+v\n", req)
 
-		resp, err := http.DefaultClient.Do(req)
+		resp, err := httpClient.Do(req)
 		if err != nil {
 			log.Fatal("Error sending GPT query request:", err)
 			return
@@ -44,6 +49,7 @@ func NewQueryHandler() func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		fmt.Println(responseBody)
 		if errorMessage, ok := responseBody["errorMessage"].(string); ok {
 			fmt.Println("Error Message:", errorMessage)
 		}
