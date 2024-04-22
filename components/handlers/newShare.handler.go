@@ -32,7 +32,20 @@ func NewShareHandler() func(w http.ResponseWriter, r *http.Request) {
 			"specificContent": map[string]interface{}{
 				"com.linkedin.ugc.ShareContent": map[string]interface{}{
 					"shareCommentary": map[string]interface{}{
-						"text": "Spending this Thursday learning more about backend systems using GoLang!",
+						"text": `Hello LinkedIn fam! 
+
+I wanted to share a little personal anecdote about my journey as a Full-stack Developer working with Swift. When I first started learning Swift, I was blown away by its simplicity and power. The way it seamlessly integrates with Apple's ecosystem and allows for rapid development of iOS and macOS applications is truly impressive.
+
+As I delved deeper into Swift, I realized just how versatile it is. From building sleek user interfaces with SwiftUI to optimizing performance with Combine, Swift has allowed me to create robust and user-friendly applications that exceed expectations.
+
+One of the things I love most about Swift is the strong community surrounding it. Whether I'm attending meetups, participating in online forums, or collaborating with fellow developers on open-source projects, I am constantly inspired by the passion and innovation that this community embodies.
+
+As a Full-stack Developer, mastering Swift has opened up a world of possibilities for me. It has not only enhanced my technical skills but also broadened my career opportunities. I am grateful for the journey so far and excited to see where it will take me next.
+
+I would love to hear about your experiences with Swift and how it has impacted your career as a developer. Feel free to share your thoughts in the comments below!
+
+#FullStackDeveloper #Swift #iOSDevelopment #TechCommunity #CareerGrowth #LinkedInNetworking 
+`,
 					},
 					"shareMediaCategory": "NONE",
 				},

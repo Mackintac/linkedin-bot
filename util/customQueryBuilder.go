@@ -18,10 +18,10 @@ func CustomQueryBuilder() string {
 	postTypeRng, postSlice := rngForStruct(postTypeStruct)
 	techRng, techSlice := rngForStruct(technologiesStruct)
 
-	var customQuery string = postSlice[postTypeRng] +
-		styleSlice[styleRng] +
-		techSlice[techRng]
-
+	customQuery :=
+		"Incorporate a professional-social tone and also while not assuming that you've made prior posts, write a linkedIn Post with the following: " + postSlice[postTypeRng] +
+			"as a: " + styleSlice[styleRng] +
+			" on the subject of: " + techSlice[techRng]
 	return customQuery
 }
 

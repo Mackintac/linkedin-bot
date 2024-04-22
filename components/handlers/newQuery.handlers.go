@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	projectUtil "dev/linkedIn/util"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,10 +10,10 @@ import (
 	"net/http"
 )
 
-func NewQueryHandler(customQuery string) func(w http.ResponseWriter, r *http.Request) {
+func NewQueryHandler() func(w http.ResponseWriter, r *http.Request) {
 
 	newQueryHandler := func(w http.ResponseWriter, r *http.Request) {
-
+		var customQuery = projectUtil.CustomQueryBuilder()
 		httpClient := &http.Client{}
 
 		queryReqBody := map[string]interface{}{

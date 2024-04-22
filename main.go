@@ -13,8 +13,7 @@ var projectConfig projectUtil.TProjectConfig = projectUtil.InitProjectConfig()
 
 func main() {
 
-	customQuery := projectUtil.CustomQueryBuilder()
-	handlers.InitHandlers(customQuery)
+	handlers.InitHandlers()
 	if err := Server(); err != nil {
 		log.Fatal("Error starting server")
 		return

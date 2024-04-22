@@ -165,7 +165,7 @@ func InitProjectConfig() TProjectConfig {
 				Guide    string
 				Anecdote string
 				Comment  string
-			}{"write a guide for:", "in the style of a personal anecdote or experience, about:", "in a pensive manner, comment on:"},
+			}{"write a guide for: ", "speak in the style of a personal anecdote or experience: ", "in a pensive manner, comment on: "},
 
 			Subject: struct {
 				Technologies [10]string
