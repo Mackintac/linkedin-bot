@@ -57,6 +57,9 @@ func NewQueryHandler() func(w http.ResponseWriter, r *http.Request) {
 
 		defer resp.Body.Close()
 
+		messageContent := responseBody["choices"].([]interface{})[0].(map[string]interface{})["message"].(map[string]interface{})["content"].(string)
+		fmt.Println("Response Message:", messageContent)
+
 	}
 	return newQueryHandler
 }
