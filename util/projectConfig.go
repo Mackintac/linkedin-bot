@@ -53,8 +53,10 @@ type TProjectConfig struct {
 			Anecdote string
 			Comment  string
 		}
-		Technologies [10]string
-		GeneralTopic [3]string
+		Subject struct {
+			Technologies [10]string
+			GeneralTopic [3]string
+		}
 	}
 }
 
@@ -138,8 +140,10 @@ func InitProjectConfig() TProjectConfig {
 				Anecdote string
 				Comment  string
 			}
-			Technologies [10]string
-			GeneralTopic [3]string
+			Subject struct {
+				Technologies [10]string
+				GeneralTopic [3]string
+			}
 		}{
 			StyleOf: struct {
 				Manager         string
@@ -162,7 +166,11 @@ func InitProjectConfig() TProjectConfig {
 				Anecdote string
 				Comment  string
 			}{"write a guide for:", "in the style of a personal anecdote or experience, about:", "in a pensive manner, comment on:"},
-			Technologies: [10]string{
+
+			Subject: struct {
+				Technologies [10]string
+				GeneralTopic [3]string
+			}{[10]string{
 				"JavaScript",
 				"Python",
 				"Java",
@@ -174,10 +182,11 @@ func InitProjectConfig() TProjectConfig {
 				"Go (Golang)",
 				"TypeScript",
 			},
-			GeneralTopic: [3]string{
-				"Team Management",
-				"Learning Programming",
-				"Productivity in the office/remote workplace",
+				[3]string{
+					"Team Management",
+					"Learning Programming",
+					"Productivity in the office/remote workplace",
+				},
 			},
 		},
 	}
