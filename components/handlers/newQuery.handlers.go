@@ -10,7 +10,8 @@ import (
 	"net/http"
 )
 
-func NewQueryHandler() func(w http.ResponseWriter, r *http.Request) {
+func NewQueryHandler() (func(w http.ResponseWriter, r *http.Request), chan string) {
+	queryHolderChannel := make(chan string)
 
 	newQueryHandler := func(w http.ResponseWriter, r *http.Request) {
 		var customQuery = projectUtil.CustomQueryBuilder()
@@ -36,7 +37,6 @@ func NewQueryHandler() func(w http.ResponseWriter, r *http.Request) {
 		}
 		req.Header.Set("Authorization", "Bearer "+projectConfig.DotEnvVars.GPTSecret)
 		req.Header.Set("Content-Type", "application/json")
-		fmt.Printf("req: %+v\n", req)
 
 		resp, err := httpClient.Do(req)
 		if err != nil {
@@ -50,7 +50,6 @@ func NewQueryHandler() func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Println(responseBody)
 		if errorMessage, ok := responseBody["errorMessage"].(string); ok {
 			fmt.Println("Error Message:", errorMessage)
 		}
@@ -60,6 +59,9 @@ func NewQueryHandler() func(w http.ResponseWriter, r *http.Request) {
 		messageContent := responseBody["choices"].([]interface{})[0].(map[string]interface{})["message"].(map[string]interface{})["content"].(string)
 		fmt.Println("Response Message:", messageContent)
 
+		queryHolder := messageContent
+		queryHolderChannel <- queryHolder
 	}
-	return newQueryHandler
+
+	return newQueryHandler, queryHolderChannel
 }

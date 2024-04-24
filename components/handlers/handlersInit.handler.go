@@ -6,8 +6,8 @@ func InitHandlers() {
 
 	// LINKEDIN API PROFILE HANDLER FOR THE /ME EP
 	userInfoHandler := UserInfoHandler()
-	newShareHandler := NewShareHandler()
-	newQueryHandler := NewQueryHandler()
+	newQueryHandler, queryHolderChannel := NewQueryHandler()
+	newShareHandler := NewShareHandler(queryHolderChannel)
 
 	http.HandleFunc(projectConfig.Endpoints.Server.NewShare, newShareHandler)
 	http.HandleFunc(projectConfig.Endpoints.Server.UserInfo, userInfoHandler)
