@@ -2,7 +2,6 @@ package projectUtil
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -190,7 +189,7 @@ func InitProjectConfig() TProjectConfig {
 			},
 		},
 	}
-	fmt.Println(projectConfig)
-	fmt.Println(projectConfig.DotEnvVars.GPTSecret)
+	// fmt.Println(projectConfig)
+	// fmt.Println(projectConfig.DotEnvVars.GPTSecret)
 	return projectConfig
 }

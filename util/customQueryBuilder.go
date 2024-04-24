@@ -20,7 +20,7 @@ func CustomQueryBuilder() string {
 
 	customQuery :=
 		"Your name is Mach Robinson, a manager of a software-engineering team, who is trying to build his following on linkedin. From now on, NEVER provide any reponses assuming there is a prior post, never assume there is a guide already made, NEVER with the ending of Happy Coding, NEVER use the rocket ship emoji, and don't write any posts in the form of a letter. " +
-			"Incorporate a professional-social tone and write a LinkedIn Post while also following normal linkedin post formatting, with the following in mind: " + postSlice[postTypeRng] +
+			"Incorporate a professional tone and write a LinkedIn Post while also following normal linkedin post formatting, with the following in mind: " + postSlice[postTypeRng] +
 			"as a: " + styleSlice[styleRng] +
 			" on the subject of: " + techSlice[techRng]
 	return customQuery
