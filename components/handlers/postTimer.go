@@ -7,7 +7,7 @@ import (
 )
 
 func PostTimer(ep string, epName string) {
-	ticker := time.NewTicker(9 * time.Hour)
+	ticker := time.NewTicker(17 * time.Hour)
 
 	for range ticker.C {
 		fmt.Println("sending an auto-ping to endpoint: " + epName)

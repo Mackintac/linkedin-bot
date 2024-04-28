@@ -68,6 +68,7 @@ func NewShareHandler(queryHolderChannel chan string) func(w http.ResponseWriter,
 				return
 			}
 
+			defer resp.Body.Close()
 			var responseBody map[string]interface{}
 			if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
 				log.Fatal("Error decoding response body:", err)
@@ -77,8 +78,6 @@ func NewShareHandler(queryHolderChannel chan string) func(w http.ResponseWriter,
 			if errorMessage, ok := responseBody["errorMessage"].(string); ok {
 				fmt.Println("Error Message:", errorMessage)
 			}
-
-			defer resp.Body.Close()
 
 		}
 	}

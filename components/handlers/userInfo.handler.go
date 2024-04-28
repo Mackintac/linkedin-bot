@@ -22,6 +22,7 @@ func UserInfoHandler() func(w http.ResponseWriter, r *http.Request) {
 			log.Fatal("Error with Get Request:", err)
 			return
 		}
+		defer resp.Body.Close()
 		var responseBody map[string]interface{}
 
 		if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
@@ -36,7 +37,6 @@ func UserInfoHandler() func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fmt.Println("Response Status:", resp.Body)
-		defer resp.Body.Close()
 		fmt.Println("Response Status:", resp.Status)
 
 	}
