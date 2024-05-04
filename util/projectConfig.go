@@ -53,7 +53,7 @@ type TProjectConfig struct {
 			Comment  string
 		}
 		Subject struct {
-			Technologies [10]string
+			Technologies [6]string
 			GeneralTopic [3]string
 		}
 	}
@@ -140,7 +140,7 @@ func InitProjectConfig() TProjectConfig {
 				Comment  string
 			}
 			Subject struct {
-				Technologies [10]string
+				Technologies [6]string
 				GeneralTopic [3]string
 			}
 		}{
@@ -167,17 +167,13 @@ func InitProjectConfig() TProjectConfig {
 			}{"write a guide for: ", "speak in the style of a personal anecdote or experience: ", "in a pensive manner, comment on: "},
 
 			Subject: struct {
-				Technologies [10]string
+				Technologies [6]string
 				GeneralTopic [3]string
-			}{[10]string{
+			}{[6]string{
 				"JavaScript",
 				"Python",
 				"Java",
-				"C#",
-				"C++",
 				"Ruby",
-				"PHP",
-				"Swift",
 				"Go (Golang)",
 				"TypeScript",
 			},

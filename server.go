@@ -7,10 +7,12 @@ import (
 )
 
 func Server() error {
+
 	server := http.Server{
 		Addr: "127.0.0.1:8080",
 	}
 
+	// Post notice text to console if program reaches server-start successfully
 	fmt.Println("Server going live")
 	err := server.ListenAndServe()
 	if err != nil {
